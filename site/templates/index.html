@@ -1,0 +1,15 @@
+
+<html>
+	<head>
+		<title>Sistemas de recomendación de libros</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body class="px-12 py-4">
+		<h3 class="text-3xl font-bold pb-4">Todos los libros</h3>
+		<ul>
+			{% for libro in libros %}
+			<li><a href="/detalle/{{libro.id_libro}}">{{ libro.titulo }}</a></li>
+			{% endfor %}
+		</ul>
+	</body>
+</html>

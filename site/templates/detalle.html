@@ -1,0 +1,44 @@
+<html>
+	<head>
+		<title>{{ libro.titulo }}</title>
+		<script src="https://cdn.tailwindcss.com"></script>
+	</head>
+	<body class="px-12 py-4">
+		<h3 class="text-3xl font-bold pb-2">{{ libro.titulo }}</h3>
+		<div class="mb-4">
+			<small
+				>{{ libro.autor|title }} - {{ libro.genero }} - {{libro.editorial|title
+				}}</small
+			>
+		</div>
+
+		<div class="flex">
+			<img src="{{ libro.img_src }}" class="mr-4 w-32 border" />
+			<div>
+				<p class="mb-2">{{ libro.resumen|truncate }}</p>
+			</div>
+		</div>
+
+		<h3 class="text-2xl py-4">Recomendaciones</h3>
+
+		<div class="grid grid-cols-5 gap-4 mb-4">
+			{% for libro in libros %}
+			<div class="border shadow-lg p-4 rounded flex flex-col">
+				<h4 class="text-xl font-bold pb-2">{{ libro.titulo }}</h4>
+				<div class="mb-4">
+					<small
+						>{{ libro.autor|title }} - {{ libro.genero }} -
+						{{libro.editorial|title}}</small
+					>
+				</div>
+
+				<div class="flex">
+					<img src="{{ libro.img_src }}" class="mr-4 w-32 border" />
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+
+		<p class="py-4"><a href="/recomendaciones">volver al inicio</a></p>
+	</body>
+</html>
