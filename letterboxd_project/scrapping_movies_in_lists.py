@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import csv
 import sys
+import time
 import json
 
 datos = pd.read_csv(sys.argv[1]) #listas = pd.read_csv("data/lists.csv")
@@ -33,6 +34,10 @@ stars_interpreter = {
 
 #para cada lista del archivo de listas
 for i in range(0, len(datos)):
+    
+    if i % 100 == 0:
+        time.sleep(10)
+
     list_link = "https://letterboxd.com" + datos["list_link"][i] + "detail/page/"
     list_id = datos["list_id"][i]
 
@@ -92,7 +97,7 @@ for i in range(0, len(datos)):
                 #films data
                     list_id_arr = [list_id] * len(table[0].findall("li"))
                         
-                    movie_id = list(set([element.attrib["data-film-id"] for element in table[0].findall(".//*[@data-film-id]")]))
+                    #movie_id = list(set([element.attrib["data-film-id"] for element in table[0].findall(".//*[@data-film-id]")]))
 
                     movie_link = [element.attrib["href"] for element in table[0].findall(".//*[@class='headline-2 prettify']/a")]
         
@@ -119,14 +124,14 @@ for i in range(0, len(datos)):
                     movie_position = [element.text for element in table[0].findall(".//*[@class='list-number']")] 
 
                     if len(movie_position) == 0:
-                        movie_position = [0] * len(movie_id)
+                        movie_position = [0] * len(movie_link)
 
 
                     #armo el dataframe
                     df_to_append = pd.DataFrame()
                     df_to_append = pd.DataFrame(
                         {'list_id': list_id_arr,
-                        'movie_id': movie_id,
+                        #'movie_id': movie_id,
                         'movie_link': movie_link,
                         'movie_stars': movie_stars,
                         'movie_calification': movie_calification,
@@ -135,7 +140,7 @@ for i in range(0, len(datos)):
                         })
 
                     #header del csv
-                    header = ["list_id","movie_id", "movie_link", "movie_stars", "movie_calification", "movie_position"]
+                    header = ["list_id", "movie_link", "movie_stars", "movie_calification", "movie_position"]
 
                     # si no existe el csv, se crea con el header
                     if os.path.isfile(path_movies)==False:
