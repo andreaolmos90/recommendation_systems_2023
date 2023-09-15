@@ -98,7 +98,7 @@ for i in range(0, len(datos)):
 
         dict_to_append = {'movie_link': movie_link,
             'title': title,
-            'director': movie_link,
+            'director': director,
             'director_link': director_link,
             'year': year,
             'description': description,
@@ -132,14 +132,15 @@ for i in range(0, len(datos)):
         print("movies data saved")
 
 
+
+
         genres_link = [element.attrib["href"] for element in tree.xpath('//*[@id="tab-genres"]/div/p/a')]
         genres = [element.text for element in tree.xpath('//*[@id="tab-genres"]/div/p/a')]
         movie_link_ = [movie_link]*len(genres_link)
 
         dict_to_append = {'movie_link_': movie_link_,
             'genres': genres,
-            'director': movie_link,
-            'director_link': director_link
+            'genres_link': genres_link
             }
         
          #armo el dataframe
@@ -151,7 +152,7 @@ for i in range(0, len(datos)):
 
         # si no existe el csv, se crea con el header
         if os.path.isfile(path_genres)==False:
-            with open(path_movies, 'a') as f:
+            with open(path_genres, 'a') as f:
                 writer = csv.writer(f)
                 writer.writerow(header)
                 df_to_append.to_csv(f, header=False, index=False)
