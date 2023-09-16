@@ -85,6 +85,7 @@ for i in range(0, len(datos)):
             
             #si la página no tiene contenido: chau
             if(len(table)) == 0:
+                print("la tabla no tiene contenido")
                 break
             
             #si es la página 1, guardo data de la lista
@@ -126,6 +127,7 @@ for i in range(0, len(datos)):
 
             # si la tabla no tiene películas, chau 
             if len(table[0].findall("li")) == 0:
+                print("la tabla no tiene películas")
                 break
                 
             #films data
@@ -186,4 +188,5 @@ for i in range(0, len(datos)):
     
     # si todo falla, chau
     except:
+        print("falló todo, chau")
         pass        
