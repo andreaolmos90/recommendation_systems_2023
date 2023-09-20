@@ -98,6 +98,7 @@ for i in range(0, len(datos)):
 
         dict_to_append = {'movie_link': movie_link,
             'title': title,
+            'image_link':image_link,
             'director': director,
             'director_link': director_link,
             'year': year,
