@@ -14,9 +14,28 @@ import random
 from bs4 import BeautifulSoup as bs
 
 
+def save_df(df_to_append, path, header):
+    # si no existe el csv, se crea con el header
+    if os.path.isfile(path)==False:
+        with open(path, 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+            df_to_append.to_csv(f, header=False, index=False)
+            f.flush()
+
+    # si existe el csv, se appendea el dataframe
+    else:
+        with open(path, 'a') as f:
+            df_to_append.to_csv(f, header=False, index=False)
+            f.flush()
+
+
+
+
 datos = pd.read_csv(sys.argv[1]) #movies = pd.read_csv("data/all_the_movies.csv")
 path_movies = sys.argv[2] #path_movies = "data/movies_1.csv"
 path_genres = sys.argv[3] #path_genres = "data/genres_1.csv"
+path_dir = sys.argv[4] #path_dir = "data/dir_1.csv"
 
 #para cada lista del archivo de listas
 for i in range(0, len(datos)):
@@ -44,7 +63,8 @@ for i in range(0, len(datos)):
  
         movie_link = "https://letterboxd.com" + datos["movie_link"][i] 
 
-
+        print(movie_link)
+        
         #tengo que ver todas sus páginas
             
         for attempt in range(3):
@@ -72,8 +92,6 @@ for i in range(0, len(datos)):
         #movies metadata
         
         title = [element.text for element in tree.xpath('//*[@id="featured-film-header"]/h1')]
-        director = [element.text for element in tree.xpath('//*[@id="featured-film-header"]/p/a/span')]
-        director_link = [element.attrib["href"] for element in tree.xpath('//*[@id="featured-film-header"]/p/a')]
         year = [element.text for element in tree.xpath('//*[@id="featured-film-header"]/p/small/a')]
         description = [element.text for element in tree.xpath('//*[@id="film-page-wrapper"]/div[2]/section[2]/section/div[1]/div/p')]
         image_link = json_obj['image']
@@ -93,14 +111,13 @@ for i in range(0, len(datos)):
         stats_histogram_tree = lxml.html.fromstring(stats_histogram.text)
 
         #vars
-        avg_rating = [element.text for element in stats_histogram_tree.xpath('//*[@class="tooltip display-rating -highlight"]')]
+        avg_rating = [element.text for element in stats_histogram_tree.xpath('//*[contains(@class,"tooltip display-rating")]')]
+
 
 
         dict_to_append = {'movie_link': movie_link,
             'title': title,
             'image_link':image_link,
-            'director': director,
-            'director_link': director_link,
             'year': year,
             'description': description,
             'watched_by': watched_by,
@@ -116,23 +133,9 @@ for i in range(0, len(datos)):
         #header del csv
         header = dict_to_append.keys()
 
-        # si no existe el csv, se crea con el header
-        if os.path.isfile(path_movies)==False:
-            with open(path_movies, 'a') as f:
-                writer = csv.writer(f)
-                writer.writerow(header)
-                df_to_append.to_csv(f, header=False, index=False)
-                f.flush()
-
-        # si existe el csv, se appendea el dataframe
-        else:
-            with open(path_movies, 'a') as f:
-                df_to_append.to_csv(f, header=False, index=False)
-                f.flush()
+        save_df(df_to_append, path_movies, header)
 
         print("movies data saved")
-
-
 
 
         genres_link = [element.attrib["href"] for element in tree.xpath('//*[@id="tab-genres"]/div/p/a')]
@@ -151,22 +154,37 @@ for i in range(0, len(datos)):
         #header del csv
         header = dict_to_append.keys()
 
-        # si no existe el csv, se crea con el header
-        if os.path.isfile(path_genres)==False:
-            with open(path_genres, 'a') as f:
-                writer = csv.writer(f)
-                writer.writerow(header)
-                df_to_append.to_csv(f, header=False, index=False)
-                f.flush()
-
-        # si existe el csv, se appendea el dataframe
-        else:
-            with open(path_genres, 'a') as f:
-                df_to_append.to_csv(f, header=False, index=False)
-                f.flush()
-
+        save_df(df_to_append, path_genres, header)
         print("genres data saved")
 
+
+        #df de directores
+        director = [element.text for element in tree.xpath('//*[@id="featured-film-header"]/p/a/span')]
+        director_link = [element.attrib["href"] for element in tree.xpath('//*[@id="featured-film-header"]/p/a')]
+        movie_link_ = [movie_link]*len(director_link)
+
+        dict_to_append = {'movie_link': movie_link,
+            'director': director,
+            'director_link': director_link,
+            }
+        
+        #armo el dataframe
+        df_to_append = pd.DataFrame()
+        df_to_append = pd.DataFrame(dict_to_append)
+
+         #header del csv
+        header = dict_to_append.keys()
+        save_df(df_to_append, path_dir, header)
+        print("dir data saved")
+
+ 
+
+
+
+
+
     # si todo falla, chau
-    except:
-        pass        
+    except Exception as e:
+        print(e)
+        #pass        
+        break
