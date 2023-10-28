@@ -10,7 +10,7 @@ import csv
 import sys
 
 path = sys.argv[1] #"data/lists.csv"
-users = sys.argv[2] #"data/users_1.csv"
+users = sys.argv[2] #"data/users.csv"
 
 #importar datos de usuarios
 users = pd.read_csv(users)

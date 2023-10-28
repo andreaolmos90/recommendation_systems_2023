@@ -13,8 +13,8 @@ import json
 import random
 
 datos = pd.read_csv(sys.argv[1]) #listas = pd.read_csv("data/lists.csv")
-path_movies = sys.argv[2] #path_movies = "data/movies_lists_1.csv"
-path_lists = sys.argv[3] #path_lists = "data/lists_data_1.csv"
+path_movies = sys.argv[2] #path_movies = "data/movies_lists.csv"
+path_lists = sys.argv[3] #path_lists = "data/lists_data.csv"
 
 
 #dictionary for stars

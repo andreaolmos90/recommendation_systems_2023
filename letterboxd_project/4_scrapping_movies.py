@@ -36,6 +36,7 @@ datos = pd.read_csv(sys.argv[1]) #movies = pd.read_csv("data/all_the_movies.csv"
 path_movies = sys.argv[2] #path_movies = "data/movies_1.csv"
 path_genres = sys.argv[3] #path_genres = "data/genres_1.csv"
 path_dir = sys.argv[4] #path_dir = "data/dir_1.csv"
+path_prod = sys.argv[5] #path_prod = "data/prod_1.csv"
 
 #para cada lista del archivo de listas
 for i in range(0, len(datos)):
@@ -75,12 +76,10 @@ for i in range(0, len(datos)):
             except requests.exceptions.ChunkedEncodingError:
                 time.sleep(1)
     
-        print("request done")
-        print(r.status_code)
 
         # si la respuesta no es 200: chau
         if r.status_code != 200:
-            break
+            pass
 
         tree = lxml.html.fromstring(r.text)
         
@@ -93,8 +92,16 @@ for i in range(0, len(datos)):
         
         title = [element.text for element in tree.xpath('//*[@id="featured-film-header"]/h1')]
         year = [element.text for element in tree.xpath('//*[@id="featured-film-header"]/p/small/a')]
-        description = [element.text for element in tree.xpath('//*[@id="film-page-wrapper"]/div[2]/section[2]/section/div[1]/div/p')]
-        image_link = json_obj['image']
+        if len(year) == 0:
+            year = "-1"
+
+        description = [' '.join([element.text for element in tree.xpath('//*[@id="film-page-wrapper"]/div[2]/section[2]/section/div[1]/div/p')])]
+        
+        if "image" in json_obj:
+            image_link = [json_obj['image']]
+        else:
+            image_link = "https://s.ltrbxd.com/static/img/empty-poster-230.876e6b8e.png"
+
 
         #stats
         stats = requests.get(f"https://letterboxd.com/esi{datos.movie_link[i]}stats/")
@@ -107,13 +114,17 @@ for i in range(0, len(datos)):
 
 
         #stats histogram
-        stats_histogram = requests.get(f"https://letterboxd.com/csi{datos.movie_link[i]}rating-histogram/")
-        stats_histogram_tree = lxml.html.fromstring(stats_histogram.text)
+        try:
+            url_ = datos["movie_link"][i]
+            url_get = f"https://letterboxd.com/csi{url_}rating-histogram/"
+            stats_histogram = requests.get(url_get)
+            stats_histogram_tree = lxml.html.fromstring(stats_histogram.text)
+            avg_rating = [element.text for element in stats_histogram_tree.xpath('//*[contains(@class,"display-rating")]')]
+            if len(avg_rating) == 0:
+                avg_rating="-1"
 
-        #vars
-        avg_rating = [element.text for element in stats_histogram_tree.xpath('//*[contains(@class,"tooltip display-rating")]')]
-
-
+        except:
+            avg_rating="-1"
 
         dict_to_append = {'movie_link': movie_link,
             'title': title,
@@ -135,8 +146,6 @@ for i in range(0, len(datos)):
 
         save_df(df_to_append, path_movies, header)
 
-        print("movies data saved")
-
 
         genres_link = [element.attrib["href"] for element in tree.xpath('//*[@id="tab-genres"]/div/p/a')]
         genres = [element.text for element in tree.xpath('//*[@id="tab-genres"]/div/p/a')]
@@ -155,12 +164,11 @@ for i in range(0, len(datos)):
         header = dict_to_append.keys()
 
         save_df(df_to_append, path_genres, header)
-        print("genres data saved")
 
 
         #df de directores
-        director = [element.text for element in tree.xpath('//*[@id="featured-film-header"]/p/a/span')]
-        director_link = [element.attrib["href"] for element in tree.xpath('//*[@id="featured-film-header"]/p/a')]
+        director = [element.text for element in tree.xpath('//*[@id="tab-crew"]/div/p/a')]
+        director_link = [element.attrib["href"] for element in tree.xpath('//*[@id="tab-crew"]/div/p/a')]
         movie_link_ = [movie_link]*len(director_link)
 
         dict_to_append = {'movie_link': movie_link,
@@ -175,16 +183,33 @@ for i in range(0, len(datos)):
          #header del csv
         header = dict_to_append.keys()
         save_df(df_to_append, path_dir, header)
-        print("dir data saved")
+
+
+        #df de productoras
+        if "productionCompany" in json_obj:
+            productor_type = [production["@type"] for production in json_obj["productionCompany"]]
+            productor_name = [production["name"] for production in json_obj["productionCompany"]]
+            productor_link = [production["sameAs"] for production in json_obj["productionCompany"]]
+            movie_link_ = [movie_link] * len(productor_link)
+
+            dict_to_append = {'movie_link': movie_link,
+                'productor_type': productor_type,
+                'productor_name': productor_name,
+                'productor_link': productor_link
+                }
+
+            #armo el dataframe
+            df_to_append = pd.DataFrame()
+            df_to_append = pd.DataFrame(dict_to_append)
+        
+            #header del csv
+            header = dict_to_append.keys()
+            save_df(df_to_append, path_prod, header)
+            
 
  
-
-
-
-
-
     # si todo falla, chau
     except Exception as e:
         print(e)
         #pass        
-        break
+        pass

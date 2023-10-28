@@ -1,1 +1,6 @@
 data/
+*.pdf
+interpretability/
+class_code/
+.DS_Store
+*.zip
